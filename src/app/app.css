@@ -15,9 +15,13 @@
 }
 
 .app-html {
-  height: 50vh;
+  height: 40vh;
 }
 
 .app-api {
-  height: 30vh;
+}
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
 }

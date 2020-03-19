@@ -1,41 +1,43 @@
 import React, { useState, useCallback } from 'react';
 
 import { Parser } from './parser/parser.component';
+import { BindingsTable } from './bindings-table/bindings-table.component';
+
+import { convertArrayToObjectKeys, getBindingsArray, example } from './utilities';
 
 import './app.css';
 
+export const App = () => {
 
-const example1 = `
-<style>
-.button-basics-example {
-  color: red
-}
-</style>
-<button class="button-basics-example">Save</button>`;
+  const [html, setHtml] = useState(example);
 
-const example2 = `
-    <style>
-      .author {
-        color: blue
-      }
-    </style>
-    <div>
-      <div class="quote" style="color: red">Quote: {{quote}}</div>
-      <p>just a line</p>
-      <div class="author">Author: {{author}}</div>
-    </div>
-`;
-
-function App() {
-
-  const [html, setHtml] = useState(example2);
+  // TODO: uncomment
+  // const [bindings, setBindings] = useState({});
+  // sinec we have default example value
+  const [bindings, setBindings] = useState(
+    convertArrayToObjectKeys(getBindingsArray(example))
+  );
 
   const onHtmlChange = useCallback(
     (event: any) => {
-      setHtml(event.target.value)
+      const text = event.target.value;
+      const bindings = getBindingsArray(text);
+      const bindingsObject = convertArrayToObjectKeys(bindings);
+      setBindings(bindingsObject);
+      setHtml(text);
     },
     [setHtml]
-  )
+  );
+
+  const onBindingsTableValueChange = useCallback(
+    (key: any, value: any) => {
+      setBindings({
+        ...bindings,
+       [key]: value
+      })
+    },
+    [bindings]
+  );
 
   return (
     <div className="app">
@@ -43,24 +45,29 @@ function App() {
         <div className="app-html">
           <h2>Html Editor</h2>
           <textarea 
-            style={{width: '95%', height: '85%', fontSize: 14}} 
+            style={{width: '95%', height: '80%', fontSize: 14}} 
             placeholder="Html" 
             onChange={onHtmlChange} 
-            defaultValue={example2} 
+            defaultValue={example} 
           />
+        </div>
+        <div>
+          <h2>Bindings</h2>
+          <BindingsTable bindings={bindings} onValueChange={onBindingsTableValueChange} />
         </div>
         <div className="app-api">
           <h4>Instructions</h4>
           <ul>
-            <li>variable should be wrapped in <small>{`{{ }}`}</small></li>
-            <li>for now, only 'author' and 'quote' variables have hardcoded values</li>
-            <li>parse on onchange textarea input</li>
+            <li>Variables should be wrapped in <small>{`{{ }}`}</small></li>
+            <li>Change the values in bindings table, to simulate api response</li>
           </ul>
         </div>
       </div>
       <div className="app-preview">
         <h2>Preview</h2>
-        <div style={{border: '1px solid black', height: '100%', padding: 8}}>{ html && <Parser input={html} /> }</div>
+        <div style={{border: '1px solid black', height: '100%', padding: 8}}>
+          { html && <Parser input={html} bindings={bindings} /> }
+        </div>
       </div>
     </div>
   );
